@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Page</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .chat-container {
+            width: 350px;
+            height: 500px;
+            background-color: #fff;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .chat-message {
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 75%;
+        }
+        .chat-message.bot {
+            background-color: #e7f1ff;
+            align-self: flex-start;
+        }
+        .chat-message.user {
+            background-color: #007bff;
+            color: white;
+            align-self: flex-end;
+        }
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #e0e0e0;
+            background-color: #f4f4f9;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+        }
+        .chat-input button {
+            padding: 10px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .chat-input button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            Chatbot
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-message bot">Hello! How can I help you today?</div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="userInput" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    <script>
+        function sendMessage() {
+            const userInput = $('#userInput').val().trim();
+            if (userInput !== '') {
+                const chatMessages = $('#chatMessages');
+    
+                // Create user message using jQuery
+                const userMessage = $('<div></div>').addClass('chat-message user').text(userInput);
+                chatMessages.append(userMessage);
+                chatMessages.scrollTop(chatMessages[0].scrollHeight); // Scroll to bottom of chat
+    
+                // Clear the input field
+                $('#userInput').val('');
+    
+                // Send message to Django view and get the bot reply from ChatterBot
+                $.get('/blog/getResponse', { userMessage: userInput })
+                    .done(function (data) {
+                        // Create bot reply message
+                        const botMessage = $('<div></div>').addClass('chat-message bot').text(data.response);
+                        chatMessages.append(botMessage);
+                        chatMessages.scrollTop(chatMessages[0].scrollHeight); // Scroll to bottom of chat
+                    })
+                    .fail(function () {
+                        // Handle error (optional)
+                        const errorMessage = $('<div></div>').addClass('chat-message bot').text('Sorry, there was an error.');
+                        chatMessages.append(errorMessage);
+                        chatMessages.scrollTop(chatMessages[0].scrollHeight);
+                    });
+            }
+        }
+    </script>
+    
+    
+
+</body>
+</html>
